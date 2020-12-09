@@ -20,8 +20,10 @@ cryptography @ file:///D:/bld/cryptography_1598621291177/work
 cycler==0.10.0
 decorator==4.4.2
 defusedxml==0.6.0
+distlib==0.3.1
 dnspython==1.16.0
 entrypoints==0.3
+filelock==3.0.12
 flake8 @ file:///home/conda/feedstock_root/build_artifacts/flake8_1594584774608/work
 gitdb==4.0.5
 GitPython==3.1.8
@@ -111,6 +113,7 @@ traitlets @ file:///home/conda/feedstock_root/build_artifacts/traitlets_15994716
 typed-ast==1.4.1
 typing-extensions @ file:///home/conda/feedstock_root/build_artifacts/typing_extensions_1588470653596/work
 urllib3 @ file:///home/conda/feedstock_root/build_artifacts/urllib3_1595434816409/work
+virtualenv==20.2.2
 wcwidth @ file:///home/conda/feedstock_root/build_artifacts/wcwidth_1595859607677/work
 webencodings==0.5.1
 win-inet-pton==1.1.0
