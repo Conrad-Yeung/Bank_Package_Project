@@ -1,7 +1,12 @@
 language: python
 python:
-    -"3.4"
-    -"3.5"
-    -"3.8"
+  - "3.5"
+  - "3.4"
+  - "3.8"
+# command to install dependencies
+install:
+  - pip install -r requirements.txt
+# command to run tests
 script:
-    -Test_Cards.ipynb
+  - export PYTHONPATH=$PYTHONPATH:$(pwd)
+  - python ./Test_Suite.py
