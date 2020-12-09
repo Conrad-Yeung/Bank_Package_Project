@@ -1,98 +1,99 @@
-# ---
-# jupyter:
-#   jupytext:
-#     text_representation:
-#       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.6.0
-#   kernelspec:
-#     display_name: Python 3
-#     language: python
-#     name: python3
-# ---
-
-# +
 import unittest
 from datetime import datetime
 
 import Bank.accounts.chequing as ch
 
 class Testchequing (unittest.TestCase):
-    
     @classmethod
     def setUpClass(cls):
-        cls.cheq1 = ch.Chequing("Conrad Yeung", 1500)
-        cls.cheq2 = ch.Chequing("Aamir Khan", 2000,3000)
-        print("Class created")
-        
+        #Initialize the account I will actually use for testing - create a history of 30 deposits (0 deposits)
+        cls.ac1 = ch.Chequing("Conrad Yeung", 1500)
+        for i in range(0,29):
+            cls.ac1.deposit(0)
+        cls.ac2 = ch.Chequing("Aamir Khan",1000)
     @classmethod
     def tearDownClass(cls):
-        print("Class torn down")
-        print("#################")
+        pass
     
     def setUp(self):
-        print("\tStart Test")
-        
+        pass
     def tearDown(self):
-        print("\tTest Complete\n")
+        pass
     
+    def test0_createclass(self):
+        #Try again - creation failed
+        me=ch.Chequing(123,123)
+        me=ch.Chequing("C2A3W",123)
+        me=ch.Chequing("Conrad","awd")
+        me=ch.Chequing("Conrad",-69)
+        me=ch.Chequing("Conrad",69,"awd")
+        me=ch.Chequing("Conrad",69,-1)
+        #Sucessfull
+        me=ch.Chequing("Conrad",1000,2500)
+        self.assertEqual(me.name,"Conrad")
+        self.assertEqual(me.bal,1000)
+        self.assertEqual(me.bal_hist,[1000])
+        self.assertEqual(len(me.bal_time),1)
+        self.assertEqual(me.recent_transact,[])
+        self.assertEqual(me.trans_time,[])
+        self.assertEqual(me.trans_lim,2500)
+        self.assertEqual(me.actype,"Chequings")
+        
     def test_1deposit(self):
-        print("Testing chequing.deposit")
-        #Should deposit sucesfully
-        self.cheq1.deposit(1000.52)
-        self.cheq2.deposit(100)
-        self.assertEqual(self.cheq1.bal,1500+1000.52)
-        self.assertEqual(self.cheq2.bal,2000+100)
-        #Should not deposit sucuessfully: Due to value < 0 (balance will be the balance above)
-        self.cheq1.deposit(-100)
-        self.cheq2.deposit(-0.001)
-        self.assertEqual(self.cheq1.bal,1500+1000.52)
-        self.assertEqual(self.cheq2.bal,2000+100)
+        #Try again - deposit failed
+        self.ac1.deposit(-12)
+        self.ac1.deposit("meow")
+        #Deposit Sucessful 
+        self.ac1.deposit(500)
+        self.ac2.deposit(1000)
+        self.assertEqual(self.ac1.bal,1500+500)
+        self.assertEqual(sum(self.ac1.bal_hist),1500*29+2000)
+        self.assertEqual(len(self.ac1.bal_time),30)
+        self.assertEqual(sum(self.ac1.recent_transact),500)
+        self.assertEqual(len(self.ac1.trans_time),30)
+        
+        self.assertEqual(self.ac2.bal,1000+1000)
+        self.assertEqual(sum(self.ac2.bal_hist),1000+(1000+1000))
+        self.assertEqual(len(self.ac2.bal_time),2)
+        self.assertEqual(sum(self.ac2.recent_transact),1000)
+        self.assertEqual(len(self.ac2.trans_time),1)
         
     def test_2withdraw(self):
-        print("Testing chequing.withdraw")
-        #Should withdraw sucesfully
-        self.cheq1.withdraw(569)
-        self.cheq2.withdraw(29.90)
-        self.assertEqual(self.cheq1.bal,2500.52-569)
-        self.assertEqual(self.cheq2.bal,2100-29.90)
-        #Should not withdraw sucesfully: Due to value < 0 (balance will be the balance above)
-        self.cheq1.withdraw(-1)
-        self.cheq2.withdraw(-0.00000123123)
-        self.assertEqual(self.cheq1.bal,2500.52-569)
-        self.assertEqual(self.cheq2.bal,2100-29.90)
-        #Should not withdraw sucesfully: Due to value > Transaction Limit (balance will be the balance above)
-        self.cheq1.withdraw(1500.1)
-        self.cheq2.withdraw(3001)
-        self.assertEqual(self.cheq1.bal,2500.52-569)
-        self.assertEqual(self.cheq2.bal,2100-29.90)
-    
-    def test_3change_lim(self):
-        print("Testing chequing.change_lim")
-        #Default limits are sucessfull
-        self.assertEqual(self.cheq1.trans_lim,1000)
-        self.assertEqual(self.cheq2.trans_lim,3000)
-        #Changes limit sucessfully
-        self.cheq1.change_lim(1400)
-        self.cheq2.change_lim(20)
-        self.assertEqual(self.cheq1.trans_lim,1400)
-        self.assertEqual(self.cheq2.trans_lim,20)
-        self.cheq1.withdraw(1400)
-        self.cheq2.withdraw(21)
-        self.assertEqual(self.cheq1.bal,1931.52-1400)
-        self.assertEqual(self.cheq2.bal,2070.1)   
-        #Change limit failed
-        self.cheq1.change_lim(-1400)       
-        self.assertEqual(self.cheq1.trans_lim,1400)
+        #Try again - deposit failed
+        self.ac1.withdraw(-1231)
+        self.ac1.withdraw("BARK")
+        self.ac1.withdraw(1500)
+        #Deposit Sucessful 
+        self.ac1.withdraw(250)
+        self.ac2.withdraw(20)
+        self.assertEqual(self.ac1.bal,1500+500-250)
+        self.assertEqual(sum(self.ac1.bal_hist),(1500*28)+2000+(2000-250))
+        self.assertEqual(len(self.ac1.bal_time),30)
+        self.assertEqual(sum(self.ac1.recent_transact),500-250)
+        self.assertEqual(len(self.ac1.trans_time),30)
         
-    def test_4balance_history_attribute(self):
-        print("Testing chequing.bal_hist and .bal_time")
-        #Check Sucessfull balance history changes
-        self.assertEqual(self.cheq1.bal_hist,[1500,1500+1000.52,2500.52-569,1931.52-1400])
-        self.assertEqual(self.cheq2.bal_hist,[2000,2000+100,2100-29.90])                    
-        #Check the number of Time entries match number of balance changes (Since Times will be essentially the same)
-        self.assertEqual(len(self.cheq1.bal_hist),len(self.cheq1.bal_time))
-        self.assertEqual(len(self.cheq2.bal_hist),len(self.cheq2.bal_time))
-
-
+        self.assertEqual(self.ac2.bal,1000+1000-20)
+        self.assertEqual(sum(self.ac2.bal_hist),1000+(1000+1000)+(2000-20))
+        self.assertEqual(len(self.ac2.bal_time),2+1)
+        self.assertEqual(sum(self.ac2.recent_transact),1000-20)
+        self.assertEqual(len(self.ac2.trans_time),1+1)
+        
+    def test_3change_lim(self):
+        #Change limit failed
+        self.ac1.change_lim(-1)       
+        self.ac1.change_lim("MOO")
+        #Default limits are sucessfull
+        self.assertEqual(self.ac1.trans_lim,1000)
+        #Changes limit sucessfully
+        self.ac1.change_lim(500)
+        self.assertEqual(self.ac1.trans_lim,500)
+        self.ac1.change_lim(2000)
+        self.assertEqual(self.ac1.trans_lim,2000)
+        self.ac1.change_lim(2000)
+        self.assertEqual(self.ac1.trans_lim,2000)
+        
+    def test_4details_summ(self):
+        self.ac1.details()
+        self.ac1.summary()
+        self.ac2.details()
+        self.ac2.summary()

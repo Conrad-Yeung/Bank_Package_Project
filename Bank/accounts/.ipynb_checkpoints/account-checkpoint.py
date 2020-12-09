@@ -8,15 +8,15 @@ class NonNegativeError(Exception):
     pass
 
 class NOTAREALNAME(Exception):
-    def __init__(self,name):
-        self.message = "{} is not a real name as it contains numbers. Try again.".format(name)
-        super().__init__(self.message)
+#    def __init__(self,name):
+#        self.message = "{} is not a real name as it contains numbers. Try again.".format(name)
+#        super().__init__(self.message)
     pass
 
 class NOTENOUGHCASH(Exception):
-    def __init__(self,withdraw,balance):
-        self.message = "You do not have enough funds to withdraw ${:.2f}. Current balance is ${:.2f}.".format(withdraw,balance)
-        super().__init__(self.message)
+#    def __init__(self,withdraw,balance):
+#        self.message = "You do not have enough funds to withdraw ${:.2f}. Current balance is ${:.2f}.".format(withdraw,balance)
+#        super().__init__(self.message)
     pass    
 
 class Account:
@@ -82,16 +82,20 @@ class Account:
             if amount < 0:
                 raise NonNegativeError 
         except NonNegativeError:
-            print("Initial deposit must be non-negative. Please Try again.")
+            print ("Initial deposit must be non-negative. Please Try again.")
             return
         except TypeError:
-            print("Please enter a numerical value for the initial deposit to your account. Please try again.")
+            print ("Please enter a numerical value for the initial deposit to your account. Please try again.")
             return
         
-        for i in str(name): #If name contains number - dont create account
-            if i.isdigit():
-                raise NOTAREALNAME(name)
-            
+        try:
+            for i in str(name): #If name contains number - dont create account
+                if i.isdigit():
+                    raise NOTAREALNAME
+        except NOTREALNAME:
+            print ("{} is not a real name as it contains numbers. Try again.".format(name))
+            return
+        
         self.name = name
         self.ac = randint(10000000,99999999)
         self.bal = amount
@@ -104,9 +108,9 @@ class Account:
         '''
         Prints account holder, account number and current balance
         '''
-#        print("The account holder is: {}.".format(self.name))
-#        print("The account number is: {}.".format(self.ac))
-#        print("Your current balance is: ${:.2f}.\n".format(self.bal))
+        print("The account holder is: {}.".format(self.name))
+        print("The account number is: {}.".format(self.ac))
+        print("Your current balance is: ${:.2f}.\n".format(self.bal))
         
     def deposit(self,amount=0):
         '''
@@ -120,17 +124,17 @@ class Account:
             if amount < 0:
                 raise NonNegativeError 
         except NonNegativeError:
-            print("Deposit must be non-negative. Please Try again.")
+            print ("Deposit must be non-negative. Please Try again.")
             return
         except TypeError:
-            print("Please enter a numerical value for the deposit. Please try again")
+            print ("Please enter a numerical value for the deposit. Please try again")
             return
         
         self.bal += amount
         timestamp = datetime.now().strftime("%Y/%m/%d, %H:%M:%S")
         
-#        print("${:.2f} has been deposited to account {}.".format(amount,self.ac))
-#        print("Current balance: ${:.2f}.\n".format(self.bal))
+        print("${:.2f} has been deposited to account {}.".format(amount,self.ac))
+        print("Current balance: ${:.2f}.\n".format(self.bal))
         
         if len(self.bal_hist) < 30: #Record Balance
             self.bal_hist.append(self.bal)
@@ -138,6 +142,8 @@ class Account:
         else:
             self.bal_hist.pop(0)
             self.bal_time.pop(0)
+            self.bal_hist.append(self.bal)
+            self.bal_time.append(timestamp)            
             
         if len(self.recent_transact) < 30: #Recent Transactions
             self.recent_transact.append(amount)
@@ -145,7 +151,9 @@ class Account:
         else:
             self.recent_transact.pop(0)
             self.trans_time.pop(0)
-             
+            self.recent_transact.append(amount)
+            self.trans_time.append(timestamp)
+    
     def withdraw(self,amount=0):
         '''
         Withdraws money from the account and prints new account balance. 
@@ -158,42 +166,50 @@ class Account:
             if amount < 0:
                 raise NonNegativeError 
         except NonNegativeError:
-            print("Withdraw must be non-negative. Please Try again.")
+            print ("Withdraw must be non-negative. Please Try again.")
             return
         except TypeError:
-            print("Please enter a numerical value for the withdraw. Please try again")
+            print ("Please enter a numerical value for the withdraw. Please try again")
             return
-
+            
         timestamp = datetime.now().strftime("%Y/%m/%d, %H:%M:%S")
         
-        if amount > self.bal:
-            raise NOTENOUGHCASH(amount,self.bal)
-        else:
-            self.bal-=amount
-#            print("${:.2f} has been withdrawn from account {}.".format(amount,self.ac))
-#            print("Current balance: ${:.2f}.\n".format(self.bal))
+        try:
+            if amount > self.bal:
+                raise NOTENOUGHCASH
+        except NOTENOUGHCASH:
+            print ("You do not have enough funds to withdraw ${:.2f}. Current balance is ${:.2f}.".format(amount,self.bal))
+            return
+
+        self.bal-=amount
+        print("${:.2f} has been withdrawn from account {}.".format(amount,self.ac))
+        print("Current balance: ${:.2f}.\n".format(self.bal))
             
-            if len(self.bal_hist) < 30: #Record Balance 
-                self.bal_hist.append(self.bal)
-                self.bal_time.append(timestamp)
-            else:
-                self.bal_hist.pop(0)
-                self.bal_time.pop(0)
+        if len(self.bal_hist) < 30: #Record Balance 
+            self.bal_hist.append(self.bal)
+            self.bal_time.append(timestamp)
+        else:
+            self.bal_hist.pop(0)
+            self.bal_time.pop(0)
+            self.bal_hist.append(self.bal)
+            self.bal_time.append(timestamp)
                 
-            if len(self.recent_transact) < 30: #Recent Transactions
-                self.recent_transact.append(-amount)
-                self.trans_time.append(timestamp)
-            else:
-                self.recent_transact.pop(0)
-                self.trans_time.pop(0)
-                
+        if len(self.recent_transact) < 30: #Recent Transactions
+            self.recent_transact.append(-amount)
+            self.trans_time.append(timestamp)
+        else:
+            self.recent_transact.pop(0)
+            self.trans_time.pop(0)
+            self.recent_transact.append(-amount)
+            self.trans_time.append(timestamp)
+            
     def summary(self):
         '''
         Prints summary information as well as graph of past 30 changes to your account balance.
         '''
-#        print("Account Holder: {}.".format(self.name))
-#        print("Current Balance: ${:.2f}.".format(self.bal))
-#        print("Your balance history for the past 30 transcations:\n")
+        print("Account Holder: {}.".format(self.name))
+        print("Current Balance: ${:.2f}.".format(self.bal))
+        print("Your balance history for the past 30 transcations:\n")
         
         #Create Plot of Balance
         fig,ax = plt.subplots()
@@ -201,7 +217,7 @@ class Account:
         
         ax.plot(x,self.bal_hist,marker="o")
         ax.set_xticks(x)
-        plt.xticks(rotation=65)
+        plt.xticks(rotation=90)
         ax.set_xticklabels(self.bal_time)
         formatter = ticker.FormatStrFormatter('$%1.2f')
         ax.yaxis.set_major_formatter(formatter)
@@ -210,4 +226,4 @@ class Account:
         plt.title("Account balance over past 30 transactions")
         plt.xlabel("Date and time of transcation (YYYY/MM/DD HH:MM:SS)")
         plt.ylabel("Account balance")
-#        print("\n")
+        print("\n")

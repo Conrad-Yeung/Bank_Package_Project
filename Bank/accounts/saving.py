@@ -4,9 +4,9 @@ from dateutil.relativedelta import relativedelta
 from . import account as ac
 
 class SPEND_LESS(Exception):
-    def __init__(self,withdraw,limit):
-        self.message = "You are unable to withdraw ${:.2f}. Current transaction limit is ${:.2f}.".format(withdraw,limit)
-        super().__init__(self.message)
+#    def __init__(self,withdraw,limit):
+#        self.message = "You are unable to withdraw ${:.2f}. Current transaction limit is ${:.2f}.".format(withdraw,limit)
+#        super().__init__(self.message)
     pass  
 
 class Saving(ac.Account):
@@ -114,15 +114,19 @@ class Saving(ac.Account):
             if maxlimit < 0:
                 raise ac.NonNegativeError 
         except ac.NonNegativeError:
-            print("Max limit must be non-negative. Please Try again.")
+            print ("Max limit must be non-negative. Please Try again.")
             return
         except TypeError:
-            print("Please enter a numerical value for the max limit to your account. Please try again.")
+            print ("Please enter a numerical value for the max limit to your account. Please try again.")
             return
         
-        for i in str(name): #If name contains number
-            if i.isdigit():
-                raise ac.NOTAREALNAME(name)
+        try:
+            for i in str(name): #If name contains number - dont create account
+                if i.isdigit():
+                    raise ac.NOTAREALNAME
+        except ac.NOTAREALNAME:
+            print ("{} is not a real name as it contains numbers. Try again.".format(name))
+            return
             
         ac.Account.__init__(self,name,amount)
         self.trans_lim = maxlimit
@@ -137,17 +141,17 @@ class Saving(ac.Account):
         '''
         Prints account holder, account number, account type, current balance, transaction limit, current amount fixed, interest rate, when it will be released and how much.
         '''
-#        print("The account holder is: {}.".format(self.name))
-#        print("The account number is: {}.".format(self.ac))
-#        print("The account type is: {}".format(self.actype))
-#        print("Your current balance is: ${:.2f}.".format(self.bal))
-#        print("Your current transaction limit is: ${:.2f}.".format(self.trans_lim))
-#        print("--------------------------------------------")
-#        if self.fix_dep_inprocess == 0:
-#            print("You currently have no fixed deposits in process.\n")
-#        else:
-#            print("You currently have ${:.2f} fixed at an interest rate of {:.2f}%.".format(self.fixed_amount,self.intrate*100))
-#            print("On {}, ${} will be added to your Savings account.\n".format(self.dateend.strftime("%Y/%m/%d"),self.fixed_amount+(self.fixed_amount*self.intrate)))   
+        print("The account holder is: {}.".format(self.name))
+        print("The account number is: {}.".format(self.ac))
+        print("The account type is: {}".format(self.actype))
+        print("Your current balance is: ${:.2f}.".format(self.bal))
+        print("Your current transaction limit is: ${:.2f}.".format(self.trans_lim))
+        print("--------------------------------------------")
+        if self.fix_dep_inprocess == 0:
+            print("You currently have no fixed deposits in process.\n")
+        else:
+            print("You currently have ${:.2f} fixed at an interest rate of {:.2f}%.".format(self.fixed_amount,self.intrate*100))
+            print("On {}, ${} will be added to your Savings account.\n".format(self.dateend.strftime("%Y/%m/%d"),self.fixed_amount+(self.fixed_amount*self.intrate)))   
            
     def withdraw(self,amount=0):
         '''
@@ -169,30 +173,42 @@ class Saving(ac.Account):
         
         timestamp = datetime.now().strftime("%Y/%m/%d, %H:%M:%S")
         
-        if amount > self.trans_lim:
-            raise SPEND_LESS(amount,self.trans_lim)
+        try:
+            if amount > self.trans_lim:
+                raise SPEND_LESS
+        except SPEND_LESS:
+            print("You are unable to withdraw ${:.2f}. Current transaction limit is ${:.2f}.".format(amount,self.trans_lim))
+            return
+        
+        try:
+            if amount > self.bal:
+                raise ac.NOTENOUGHCASH
+        except ac.NOTENOUGHCASH:
+            print("You do not have enough funds to withdraw ${:.2f}. Current balance is ${:.2f}.".format(amount,self.bal))
+            return
+        
+        self.bal-=amount
+        print("${:.2f} has been withdrawn from account {}.".format(amount,self.ac))
+        print("Current balance: ${:.2f}.\n".format(self.bal))
             
-        elif amount > self.bal:
-            raise ac.NOTENOUGHCASH(amount,self.bal)
+        if len(self.bal_hist) < 30: #Record Balance 
+            self.bal_hist.append(self.bal)
+            self.bal_time.append(timestamp)
         else:
-            self.bal-=amount
-#            print("${:.2f} has been withdrawn from account {}.".format(amount,self.ac))
-#            print("Current balance: ${:.2f}.\n".format(self.bal))
+            self.bal_hist.pop(0)
+            self.bal_time.pop(0)
+            self.bal_hist.append(self.bal)
+            self.bal_time.append(timestamp)
             
-            if len(self.bal_hist) < 30: #Record Balance 
-                self.bal_hist.append(self.bal)
-                self.bal_time.append(timestamp)
-            else:
-                self.bal_hist.pop(0)
-                self.bal_time.pop(0)
-                
-            if len(self.recent_transact) < 30: #Recent Transactions
-                self.recent_transact.append(-amount)
-                self.trans_time.append(timestamp)
-            else:
-                self.recent_transact.pop(0)
-                self.trans_time.pop(0)
-
+        if len(self.recent_transact) < 30: #Recent Transactions
+            self.recent_transact.append(-amount)
+            self.trans_time.append(timestamp)
+        else:
+            self.recent_transact.pop(0)
+            self.trans_time.pop(0)
+            self.recent_transact.append(-amount)
+            self.trans_time.append(timestamp)
+            
     def change_lim(self,newlim=0):
         '''
         Changes the transaction limit of the account.
@@ -212,13 +228,13 @@ class Saving(ac.Account):
             return
         
         if self.trans_lim < newlim:
-#            print("Your transaction limit has increased from ${:.2f} to ${:.2f}.\n".format(self.trans_lim,newlim))
+            print("Your transaction limit has increased from ${:.2f} to ${:.2f}.\n".format(self.trans_lim,newlim))
             self.trans_lim = newlim
         elif self.trans_lim > newlim:
-#            print("Your transaction limit has decreased from ${:.2f} to ${:.2f}.\n".format(self.trans_lim,newlim))
+            print("Your transaction limit has decreased from ${:.2f} to ${:.2f}.\n".format(self.trans_lim,newlim))
             self.trans_lim = newlim
-#        else:
-#            print("Your transaction limit is already ${:.2f}.\n".format(self.trans_lim))
+        else:
+            print("Your transaction limit is already ${:.2f}.\n".format(self.trans_lim))
 ###        
     def setfixdeposit(self,amount=0,intrate=0.01,test=False):
         '''
@@ -256,13 +272,13 @@ class Saving(ac.Account):
             return            
         
         if self.fix_dep_inprocess == 1 and (today == self.dateend or (today-self.dateend).days >= 0): #Have fixed deposit created - lockin = OVER
-#            print("Your fixed depot created on {} is complete.\n".format(self.datestart.strftime("%Y/%m/%d")))
+            print("Your fixed depot created on {} is complete.\n".format(self.datestart.strftime("%Y/%m/%d")))
             self.deposit(self.fixed_amount+(self.fixed_amount*self.intrate))
             self.fix_dep_inprocess = 0
             self.datestart = 0
             self.dateend = 0
         elif self.fix_dep_inprocess == 1 and (today != self.dateend or (today-self.dateend).days < 0): #Fixed deposit still in progress
-#            print("You already have a fixed deposit in process. The current amount locked in is ${:.2f} at a rate of {:.2f}%. The amount will be made available on {}.\n".format(self.fixed_amount,self.intrate*100,self.dateend.strftime("%Y/%m/%d")))
+            print("You already have a fixed deposit in process. The current amount locked in is ${:.2f} at a rate of {:.2f}%. The amount will be made available on {}.\n".format(self.fixed_amount,self.intrate*100,self.dateend.strftime("%Y/%m/%d")))
             return 
         elif self.fix_dep_inprocess == 0: #Creation - no current fixed deposit therefore initialize
             self.datestart = today
@@ -270,5 +286,5 @@ class Saving(ac.Account):
             self.fix_dep_inprocess = 1
             self.fixed_amount = amount
             self.intrate = intrate
-#            print("Your deposit of ${:.2f} has been fixed for a year with an interest rate of {:.2f}%.".format(self.fixed_amount,self.intrate*100))
-#            print("On {}, ${} will be added to your Savings account.\n".format(self.dateend.strftime("%Y/%m/%d"),self.fixed_amount+(self.fixed_amount*self.intrate)))   
+            print("Your deposit of ${:.2f} has been fixed for a year with an interest rate of {:.2f}%.".format(self.fixed_amount,self.intrate*100))
+            print("On {}, ${} will be added to your Savings account.\n".format(self.dateend.strftime("%Y/%m/%d"),self.fixed_amount+(self.fixed_amount*self.intrate)))   
