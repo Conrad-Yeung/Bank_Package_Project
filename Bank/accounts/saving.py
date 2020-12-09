@@ -3,6 +3,12 @@ from dateutil.relativedelta import relativedelta
 
 from . import account as ac
 
+class SPEND_LESS(Exception):
+    def __init__(self,withdraw,limit):
+        self.message = "You are unable to withdraw ${:.2f}. Current transaction limit is ${:.2f}.".format(withdraw,limit)
+        super().__init__(self.message)
+    pass  
+
 class Saving(ac.Account):
     '''
     Inherits from base class "account". 
@@ -94,13 +100,29 @@ class Saving(ac.Account):
         NotImplementedError
             When initial deposit, maxlimit is less than 0.
         '''
-        if amount < 0 or maxlimit < 0:
-            raise NotImplementedError("Initial deposit, max limit and interest rate must be non-negative.")
-            
-        for i in str(name):
+        try: #If amount is Negative or Alphabetic
+            if amount < 0:
+                raise ac.NonNegativeError 
+        except ac.NonNegativeError:
+            print("Initial deposit must be non-negative. Please Try again.")
+            return
+        except TypeError:
+            print("Please enter a numerical value for the initial deposit to your account. Please try again.")
+            return
+        
+        try: #If maxlim is Negative or Alphabetic
+            if maxlimit < 0:
+                raise ac.NonNegativeError 
+        except ac.NonNegativeError:
+            print("Max limit must be non-negative. Please Try again.")
+            return
+        except TypeError:
+            print("Please enter a numerical value for the max limit to your account. Please try again.")
+            return
+        
+        for i in str(name): #If name contains number
             if i.isdigit():
-                print("Please enter a name. Cannot have numerical values.\n")
-                return
+                raise ac.NOTAREALNAME(name)
             
         ac.Account.__init__(self,name,amount)
         self.trans_lim = maxlimit
@@ -115,17 +137,17 @@ class Saving(ac.Account):
         '''
         Prints account holder, account number, account type, current balance, transaction limit, current amount fixed, interest rate, when it will be released and how much.
         '''
-        print("The account holder is: {}.".format(self.name))
-        print("The account number is: {}.".format(self.ac))
-        print("The account type is: {}".format(self.actype))
-        print("Your current balance is: ${:.2f}.".format(self.bal))
-        print("Your current transaction limit is: ${:.2f}.".format(self.trans_lim))
-        print("--------------------------------------------")
-        if self.fix_dep_inprocess == 0:
-            print("You currently have no fixed deposits in process.\n")
-        else:
-            print("You currently have ${:.2f} fixed at an interest rate of {:.2f}%.".format(self.fixed_amount,self.intrate*100))
-            print("On {}, ${} will be added to your Savings account.\n".format(self.dateend.strftime("%Y/%m/%d"),self.fixed_amount+(self.fixed_amount*self.intrate)))   
+#        print("The account holder is: {}.".format(self.name))
+#        print("The account number is: {}.".format(self.ac))
+#        print("The account type is: {}".format(self.actype))
+#        print("Your current balance is: ${:.2f}.".format(self.bal))
+#        print("Your current transaction limit is: ${:.2f}.".format(self.trans_lim))
+#        print("--------------------------------------------")
+#        if self.fix_dep_inprocess == 0:
+#            print("You currently have no fixed deposits in process.\n")
+#        else:
+#            print("You currently have ${:.2f} fixed at an interest rate of {:.2f}%.".format(self.fixed_amount,self.intrate*100))
+#            print("On {}, ${} will be added to your Savings account.\n".format(self.dateend.strftime("%Y/%m/%d"),self.fixed_amount+(self.fixed_amount*self.intrate)))   
            
     def withdraw(self,amount=0):
         '''
@@ -135,19 +157,27 @@ class Saving(ac.Account):
             ----------
             amount : int/float (optional). Must be positive number. Must be less than current account balance. Must be less than trans_lim.
         '''
-        if amount < 0:
-            print("Amount to withdraw must be greater than 0.\n")
+        try: #If amount is Negative or Alphabetic
+            if amount < 0:
+                raise ac.NonNegativeError 
+        except ac.NonNegativeError:
+            print("Withdraw must be non-negative. Please Try again.")
+            return
+        except TypeError:
+            print("Please enter a numerical value for the withdraw to your account. Please try again.")
             return
         
         timestamp = datetime.now().strftime("%Y/%m/%d, %H:%M:%S")
+        
         if amount > self.trans_lim:
-            print("Your current transaction limit is ${:.2f}, therefore you are unable to withdraw the requested amount of ${:.2f}.\n".format(self.trans_lim,amount)) 
+            raise SPEND_LESS(amount,self.trans_lim)
+            
         elif amount > self.bal:
-            print("You do not have enough funds to withdraw {:.2f}.\n".format(amount))
+            raise ac.NOTENOUGHCASH(amount,self.bal)
         else:
             self.bal-=amount
-            print("${:.2f} has been withdrawn from account {}.".format(amount,self.ac))
-            print("Current balance: ${:.2f}.\n".format(self.bal))
+#            print("${:.2f} has been withdrawn from account {}.".format(amount,self.ac))
+#            print("Current balance: ${:.2f}.\n".format(self.bal))
             
             if len(self.bal_hist) < 30: #Record Balance 
                 self.bal_hist.append(self.bal)
@@ -171,18 +201,24 @@ class Saving(ac.Account):
             -----------
             newlim : int/float. Must be positive number
         '''
-        if newlim <= 0:
-            print("Account limit must be greater than 0.\n")
+        try:
+            if newlim < 0:
+                raise ac.NonNegativeError
+        except ac.NonNegativeError:
+            print("Limit must be non-negative. Please Try again.")
+            return
+        except TypeError:
+            print("Please enter a numerical value for the max limit to your account. Please try again.")
             return
         
         if self.trans_lim < newlim:
-            print("Your transaction limit has increased from ${:.2f} to ${:.2f}.\n".format(self.trans_lim,newlim))
+#            print("Your transaction limit has increased from ${:.2f} to ${:.2f}.\n".format(self.trans_lim,newlim))
             self.trans_lim = newlim
         elif self.trans_lim > newlim:
-            print("Your transaction limit has decreased from ${:.2f} to ${:.2f}.\n".format(self.trans_lim,newlim))
+#            print("Your transaction limit has decreased from ${:.2f} to ${:.2f}.\n".format(self.trans_lim,newlim))
             self.trans_lim = newlim
-        else:
-            print("Your transaction limit is already ${:.2f}.\n".format(self.trans_lim))
+#        else:
+#            print("Your transaction limit is already ${:.2f}.\n".format(self.trans_lim))
 ###        
     def setfixdeposit(self,amount=0,intrate=0.01,test=False):
         '''
@@ -198,19 +234,35 @@ class Saving(ac.Account):
         
         if test == True: #For testing purposes
             self.dateend = today
-        
-        if amount <=0 or intrate <=0: 
-            print("Amount for a fixed deposit and interest rate must be greater than 0.\n")
+
+        try: #If amount is Negative or Alphabetic
+            if amount < 0:
+                raise ac.NonNegativeError 
+        except ac.NonNegativeError:
+            print("Fixed deposit must be non-negative. Please Try again.")
             return
+        except TypeError:
+            print("Please enter a numerical value for your fixed deposit. Please try again.")
+            return            
+            
+        try: #If intrate is Negative or Alphabetic
+            if intrate < 0:
+                raise ac.NonNegativeError 
+        except ac.NonNegativeError:
+            print("Interest Rate must be non-negative. Please Try again.")
+            return
+        except TypeError:
+            print("Please enter a numerical value for the Interest Rate of your deposit. Please try again.")
+            return            
         
         if self.fix_dep_inprocess == 1 and (today == self.dateend or (today-self.dateend).days >= 0): #Have fixed deposit created - lockin = OVER
-            print("Your fixed depot created on {} is complete.\n".format(self.datestart.strftime("%Y/%m/%d")))
+#            print("Your fixed depot created on {} is complete.\n".format(self.datestart.strftime("%Y/%m/%d")))
             self.deposit(self.fixed_amount+(self.fixed_amount*self.intrate))
             self.fix_dep_inprocess = 0
             self.datestart = 0
             self.dateend = 0
         elif self.fix_dep_inprocess == 1 and (today != self.dateend or (today-self.dateend).days < 0): #Fixed deposit still in progress
-            print("You already have a fixed deposit in process. The current amount locked in is ${:.2f} at a rate of {:.2f}%. The amount will be made available on {}.\n".format(self.fixed_amount,self.intrate*100,self.dateend.strftime("%Y/%m/%d")))
+#            print("You already have a fixed deposit in process. The current amount locked in is ${:.2f} at a rate of {:.2f}%. The amount will be made available on {}.\n".format(self.fixed_amount,self.intrate*100,self.dateend.strftime("%Y/%m/%d")))
             return 
         elif self.fix_dep_inprocess == 0: #Creation - no current fixed deposit therefore initialize
             self.datestart = today
@@ -218,5 +270,5 @@ class Saving(ac.Account):
             self.fix_dep_inprocess = 1
             self.fixed_amount = amount
             self.intrate = intrate
-            print("Your deposit of ${:.2f} has been fixed for a year with an interest rate of {:.2f}%.".format(self.fixed_amount,self.intrate*100))
-            print("On {}, ${} will be added to your Savings account.\n".format(self.dateend.strftime("%Y/%m/%d"),self.fixed_amount+(self.fixed_amount*self.intrate)))   
+#            print("Your deposit of ${:.2f} has been fixed for a year with an interest rate of {:.2f}%.".format(self.fixed_amount,self.intrate*100))
+#            print("On {}, ${} will be added to your Savings account.\n".format(self.dateend.strftime("%Y/%m/%d"),self.fixed_amount+(self.fixed_amount*self.intrate)))   

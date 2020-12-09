@@ -4,6 +4,20 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import numpy as np
 
+class NonNegativeError(Exception):
+    pass
+
+class NOTAREALNAME(Exception):
+    def __init__(self,name):
+        self.message = "{} is not a real name as it contains numbers. Try again.".format(name)
+        super().__init__(self.message)
+    pass
+
+class NOTENOUGHCASH(Exception):
+    def __init__(self,withdraw,balance):
+        self.message = "You do not have enough funds to withdraw ${:.2f}. Current balance is ${:.2f}.".format(withdraw,balance)
+        super().__init__(self.message)
+    pass    
 
 class Account:
     '''
@@ -63,13 +77,20 @@ class Account:
         NotImplementedError
             When initial deposit is less than 0.
         '''
-        if amount < 0:
-            raise NotImplementedError("Initial deposit must be non-negative.")
         
-        for i in str(name):
+        try: #If amount is Negative or Alphabetic - dont create account
+            if amount < 0:
+                raise NonNegativeError 
+        except NonNegativeError:
+            print("Initial deposit must be non-negative. Please Try again.")
+            return
+        except TypeError:
+            print("Please enter a numerical value for the initial deposit to your account. Please try again.")
+            return
+        
+        for i in str(name): #If name contains number - dont create account
             if i.isdigit():
-                print("Please enter a name. Cannot have numerical values.\n")
-                return
+                raise NOTAREALNAME(name)
             
         self.name = name
         self.ac = randint(10000000,99999999)
@@ -83,9 +104,9 @@ class Account:
         '''
         Prints account holder, account number and current balance
         '''
-        print("The account holder is: {}.".format(self.name))
-        print("The account number is: {}.".format(self.ac))
-        print("Your current balance is: ${:.2f}.\n".format(self.bal))
+#        print("The account holder is: {}.".format(self.name))
+#        print("The account number is: {}.".format(self.ac))
+#        print("Your current balance is: ${:.2f}.\n".format(self.bal))
         
     def deposit(self,amount=0):
         '''
@@ -95,13 +116,21 @@ class Account:
         ----------
         amount : int/float (optional). Must be positive number.
         '''
-        if amount <0:
-            print("Amount to deposit must be greater than 0.\n")
+        try: #If amount is Negative or Alphabetic - dont create account
+            if amount < 0:
+                raise NonNegativeError 
+        except NonNegativeError:
+            print("Deposit must be non-negative. Please Try again.")
             return
+        except TypeError:
+            print("Please enter a numerical value for the deposit. Please try again")
+            return
+        
         self.bal += amount
         timestamp = datetime.now().strftime("%Y/%m/%d, %H:%M:%S")
-        print("${:.2f} has been deposited to account {}.".format(amount,self.ac))
-        print("Current balance: ${:.2f}.\n".format(self.bal))
+        
+#        print("${:.2f} has been deposited to account {}.".format(amount,self.ac))
+#        print("Current balance: ${:.2f}.\n".format(self.bal))
         
         if len(self.bal_hist) < 30: #Record Balance
             self.bal_hist.append(self.bal)
@@ -125,16 +154,24 @@ class Account:
         ----------
         amount : int/float (optional). Must be positive number.
         '''
-        if amount <0:
-            print("Amount to withdraw must be greater than 0.\n")
+        try: #If amount is Negative or Alphabetic - dont create account
+            if amount < 0:
+                raise NonNegativeError 
+        except NonNegativeError:
+            print("Withdraw must be non-negative. Please Try again.")
             return
+        except TypeError:
+            print("Please enter a numerical value for the withdraw. Please try again")
+            return
+
         timestamp = datetime.now().strftime("%Y/%m/%d, %H:%M:%S")
+        
         if amount > self.bal:
-            print("You do not have enough funds to withdraw {:.2f}.\n".format(amount))
+            raise NOTENOUGHCASH(amount,self.bal)
         else:
             self.bal-=amount
-            print("${:.2f} has been withdrawn from account {}.".format(amount,self.ac))
-            print("Current balance: ${:.2f}.\n".format(self.bal))
+#            print("${:.2f} has been withdrawn from account {}.".format(amount,self.ac))
+#            print("Current balance: ${:.2f}.\n".format(self.bal))
             
             if len(self.bal_hist) < 30: #Record Balance 
                 self.bal_hist.append(self.bal)
@@ -154,9 +191,9 @@ class Account:
         '''
         Prints summary information as well as graph of past 30 changes to your account balance.
         '''
-        print("Account Holder: {}.".format(self.name))
-        print("Current Balance: ${:.2f}.".format(self.bal))
-        print("Your balance history for the past 30 transcations:\n")
+#        print("Account Holder: {}.".format(self.name))
+#        print("Current Balance: ${:.2f}.".format(self.bal))
+#        print("Your balance history for the past 30 transcations:\n")
         
         #Create Plot of Balance
         fig,ax = plt.subplots()
@@ -173,4 +210,4 @@ class Account:
         plt.title("Account balance over past 30 transactions")
         plt.xlabel("Date and time of transcation (YYYY/MM/DD HH:MM:SS)")
         plt.ylabel("Account balance")
-        print("\n")
+#        print("\n")

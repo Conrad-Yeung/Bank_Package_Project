@@ -1,3 +1,18 @@
+# ---
+# jupyter:
+#   jupytext:
+#     text_representation:
+#       extension: .py
+#       format_name: light
+#       format_version: '1.5'
+#       jupytext_version: 1.6.0
+#   kernelspec:
+#     display_name: Python 3
+#     language: python
+#     name: python3
+# ---
+
+# +
 import unittest
 from datetime import datetime
 
@@ -79,4 +94,5 @@ class Testchequing (unittest.TestCase):
         #Check the number of Time entries match number of balance changes (Since Times will be essentially the same)
         self.assertEqual(len(self.cheq1.bal_hist),len(self.cheq1.bal_time))
         self.assertEqual(len(self.cheq2.bal_hist),len(self.cheq2.bal_time))
+
 
