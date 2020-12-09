@@ -20,7 +20,7 @@ class Testchequing (unittest.TestCase):
     def tearDown(self):
         pass
     
-    def test0_createclass(self):
+    def test_0createclass(self):
         #Try again - creation failed
         me=ch.Chequing(123,123)
         me=ch.Chequing("C2A3W",123)

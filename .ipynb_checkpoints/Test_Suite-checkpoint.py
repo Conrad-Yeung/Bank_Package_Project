@@ -15,13 +15,13 @@
 # +
 import unittest
 from testclass.asserttest_chq import Testchequing
-#from testclass.accounting_savingtest import Testsaving
+from testclass.asserttest_sav import Testsaving
 
 def my_suite():
     suite = unittest.TestSuite()
     result = unittest.TestResult()
     suite.addTest(unittest.makeSuite(Testchequing))
-#    suite.addTest(unittest.makeSuite(Testsaving))
+    suite.addTest(unittest.makeSuite(Testsaving))
     runner = unittest.TextTestRunner()
     print(runner.run(suite))
 

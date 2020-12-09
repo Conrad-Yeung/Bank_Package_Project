@@ -1,24 +1,9 @@
-# ---
-# jupyter:
-#   jupytext:
-#     text_representation:
-#       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.6.0
-#   kernelspec:
-#     display_name: Python 3
-#     language: python
-#     name: python3
-# ---
-
-# +
 import unittest
 from datetime import datetime
 
 import Bank.accounts.saving as sv
 
-class Testchequing (unittest.TestCase):
+class Testsaving (unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         #Initialize the account I will actually use for testing - create a history of 30 deposits (0 deposits)
@@ -35,7 +20,7 @@ class Testchequing (unittest.TestCase):
     def tearDown(self):
         pass
     
-    def test0_createclass(self):
+    def test_0createclass(self):
         #Try again - creation failed
         me=sv.Saving(123,123)
         me=sv.Saving("C2A3W",123)
@@ -52,7 +37,7 @@ class Testchequing (unittest.TestCase):
         self.assertEqual(me.recent_transact,[])
         self.assertEqual(me.trans_time,[])
         self.assertEqual(me.trans_lim,2500)
-        self.assertEqual(me.actype,"Chequings")
+        self.assertEqual(me.actype,"Savings")
         
     def test_1deposit(self):
         #Try again - deposit failed
@@ -108,26 +93,33 @@ class Testchequing (unittest.TestCase):
         self.assertEqual(self.ac1.trans_lim,2000)
         
     def test_4setfixdeposit(self):
-        print("Testing saving.setfixdeposit")
+        bal1=self.ac1.bal
+        bal2=self.ac2.bal
+        #Initializing Dates - Today + 1 Year from Today
         date_today = datetime(datetime.today().year,datetime.today().month,datetime.today().day)
         date_next_year = datetime(datetime.today().year+1,datetime.today().month,datetime.today().day)
+        #Try again - fix deposit failed 
+        self.ac1.setfixdeposit(-123)
+        self.ac1.setfixdeposit("caw")
+        self.ac1.setfixdeposit(500,-0.01)
+        self.ac1.setfixdeposit(500,"rrbit")
         #Creating Fix Deposit & Checking Values (Deposit amount, Interest Rate, Date locked in and Date end)
-        self.sav1.setfixdeposit(1000)
-        self.sav2.setfixdeposit(500,0.5)
-        self.assertEqual([self.sav1.fixed_amount,self.sav1.intrate,self.sav1.datestart,self.sav1.dateend,self.sav1.fix_dep_inprocess], [1000,0.01,date_today,date_next_year,1])
-        self.assertEqual([self.sav2.fixed_amount,self.sav2.intrate,self.sav2.datestart,self.sav2.dateend,self.sav2.fix_dep_inprocess], [500,0.5,date_today,date_next_year,1])
+        self.ac1.setfixdeposit(1000)
+        self.ac2.setfixdeposit(500,0.5)
+        self.assertEqual([self.ac1.fixed_amount,self.ac1.intrate,self.ac1.datestart,self.ac1.dateend,self.ac1.fix_dep_inprocess], [1000,0.01,date_today,date_next_year,1])
+        self.assertEqual([self.ac2.fixed_amount,self.ac2.intrate,self.ac2.datestart,self.ac2.dateend,self.ac2.fix_dep_inprocess], [500,0.5,date_today,date_next_year,1])
         #Should fail - Trying to Create a Fix deposit while active 
-        self.sav1.setfixdeposit(1000)
-        self.sav2.setfixdeposit(500,0.5)
-        self.assertEqual([self.sav1.fixed_amount,self.sav1.intrate,self.sav1.datestart,self.sav1.dateend,self.sav1.fix_dep_inprocess], [1000,0.01,date_today,date_next_year,1])
-        self.assertEqual([self.sav2.fixed_amount,self.sav2.intrate,self.sav2.datestart,self.sav2.dateend,self.sav2.fix_dep_inprocess], [500,0.5,date_today,date_next_year,1])
+        self.ac1.setfixdeposit(1000)
+        self.ac2.setfixdeposit(500,0.5)
+        self.assertEqual([self.ac1.fixed_amount,self.ac1.intrate,self.ac1.datestart,self.ac1.dateend,self.ac1.fix_dep_inprocess], [1000,0.01,date_today,date_next_year,1])
+        self.assertEqual([self.ac2.fixed_amount,self.ac2.intrate,self.ac2.datestart,self.ac2.dateend,self.ac2.fix_dep_inprocess], [500,0.5,date_today,date_next_year,1])
         #Despoit into bal & reset fixed desposit - When fixed deposit date is reached
-        self.sav1.setfixdeposit(1000,0.1,True)
-        self.sav2.setfixdeposit(500,0.5,True)
-        self.assertEqual([self.sav1.fixed_amount,self.sav1.intrate,self.sav1.datestart,self.sav1.dateend,self.sav1.fix_dep_inprocess], [1000,0.01,0,0,0])
-        self.assertEqual([self.sav2.fixed_amount,self.sav2.intrate,self.sav2.datestart,self.sav2.dateend,self.sav2.fix_dep_inprocess], [500,0.5,0,0,0])
-        self.assertEqual(self.sav1.bal,33+(1000+1000*0.01))
-        self.assertEqual(self.sav2.bal,1449.1+(500+500*0.5))        
+        self.ac1.setfixdeposit(1000,0.1,True)
+        self.ac2.setfixdeposit(500,0.5,True)
+        self.assertEqual([self.ac1.fixed_amount,self.ac1.intrate,self.ac1.datestart,self.ac1.dateend,self.ac1.fix_dep_inprocess], [1000,0.01,0,0,0])
+        self.assertEqual([self.ac2.fixed_amount,self.ac2.intrate,self.ac2.datestart,self.ac2.dateend,self.ac2.fix_dep_inprocess], [500,0.5,0,0,0])
+        self.assertEqual(self.ac1.bal,bal1+(1000+1000*0.01))
+        self.assertEqual(self.ac2.bal,bal2+(500+500*0.5))        
         
     def test_5details_summ(self):
         self.ac1.details()
