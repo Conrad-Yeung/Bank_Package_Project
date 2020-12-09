@@ -1,0 +1,7 @@
+langauge: python
+python: 
+  -"3.4"
+  -"3.5"
+  -"3.8"
+script:
+install:
