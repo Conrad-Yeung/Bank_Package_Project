@@ -1,6 +1,6 @@
 language: python
 version:
-  -"3.8"
+  - "3.8"
 os: windows
 script: 
   - Test_Suite.py
