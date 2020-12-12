@@ -1,11 +1,7 @@
 language: python
 version:
-
   -"3.8"
-  -"3.5"
-  -"3.4"
-  -"3.6"
-
+os: windows
 script: 
-  - pytest
+  - Test_Suite.py
 
