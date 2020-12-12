@@ -3,6 +3,12 @@ from dateutil.relativedelta import relativedelta
 
 from . import account as ac
 
+class SPEND_LESS(Exception):
+#    def __init__(self,withdraw,limit):
+#        self.message = "You are unable to withdraw ${:.2f}. Current transaction limit is ${:.2f}.".format(withdraw,limit)
+#        super().__init__(self.message)
+    pass  
+
 class Saving(ac.Account):
     '''
     Inherits from base class "account". 
@@ -94,13 +100,33 @@ class Saving(ac.Account):
         NotImplementedError
             When initial deposit, maxlimit is less than 0.
         '''
-        if amount < 0 or maxlimit < 0:
-            raise NotImplementedError("Initial deposit, max limit and interest rate must be non-negative.")
-            
-        for i in str(name):
-            if i.isdigit():
-                print("Please enter a name. Cannot have numerical values.\n")
-                return
+        try: #If amount is Negative or Alphabetic
+            if amount < 0:
+                raise ac.NonNegativeError 
+        except ac.NonNegativeError:
+            print("Initial deposit must be non-negative. Please Try again.")
+            return
+        except TypeError:
+            print("Please enter a numerical value for the initial deposit to your account. Please try again.")
+            return
+        
+        try: #If maxlim is Negative or Alphabetic
+            if maxlimit < 0:
+                raise ac.NonNegativeError 
+        except ac.NonNegativeError:
+            print ("Max limit must be non-negative. Please Try again.")
+            return
+        except TypeError:
+            print ("Please enter a numerical value for the max limit to your account. Please try again.")
+            return
+        
+        try:
+            for i in str(name): #If name contains number - dont create account
+                if i.isdigit():
+                    raise ac.NOTAREALNAME
+        except ac.NOTAREALNAME:
+            print ("{} is not a real name as it contains numbers. Try again.".format(name))
+            return
             
         ac.Account.__init__(self,name,amount)
         self.trans_lim = maxlimit
@@ -135,34 +161,54 @@ class Saving(ac.Account):
             ----------
             amount : int/float (optional). Must be positive number. Must be less than current account balance. Must be less than trans_lim.
         '''
-        if amount < 0:
-            print("Amount to withdraw must be greater than 0.\n")
+        try: #If amount is Negative or Alphabetic
+            if amount < 0:
+                raise ac.NonNegativeError 
+        except ac.NonNegativeError:
+            print("Withdraw must be non-negative. Please Try again.")
+            return
+        except TypeError:
+            print("Please enter a numerical value for the withdraw to your account. Please try again.")
             return
         
         timestamp = datetime.now().strftime("%Y/%m/%d, %H:%M:%S")
-        if amount > self.trans_lim:
-            print("Your current transaction limit is ${:.2f}, therefore you are unable to withdraw the requested amount of ${:.2f}.\n".format(self.trans_lim,amount)) 
-        elif amount > self.bal:
-            print("You do not have enough funds to withdraw {:.2f}.\n".format(amount))
-        else:
-            self.bal-=amount
-            print("${:.2f} has been withdrawn from account {}.".format(amount,self.ac))
-            print("Current balance: ${:.2f}.\n".format(self.bal))
+        
+        try:
+            if amount > self.trans_lim:
+                raise SPEND_LESS
+        except SPEND_LESS:
+            print("You are unable to withdraw ${:.2f}. Current transaction limit is ${:.2f}.".format(amount,self.trans_lim))
+            return
+        
+        try:
+            if amount > self.bal:
+                raise ac.NOTENOUGHCASH
+        except ac.NOTENOUGHCASH:
+            print("You do not have enough funds to withdraw ${:.2f}. Current balance is ${:.2f}.".format(amount,self.bal))
+            return
+        
+        self.bal-=amount
+        print("${:.2f} has been withdrawn from account {}.".format(amount,self.ac))
+        print("Current balance: ${:.2f}.\n".format(self.bal))
             
-            if len(self.bal_hist) < 30: #Record Balance 
-                self.bal_hist.append(self.bal)
-                self.bal_time.append(timestamp)
-            else:
-                self.bal_hist.pop(0)
-                self.bal_time.pop(0)
-                
-            if len(self.recent_transact) < 30: #Recent Transactions
-                self.recent_transact.append(-amount)
-                self.trans_time.append(timestamp)
-            else:
-                self.recent_transact.pop(0)
-                self.trans_time.pop(0)
-
+        if len(self.bal_hist) < 30: #Record Balance 
+            self.bal_hist.append(self.bal)
+            self.bal_time.append(timestamp)
+        else:
+            self.bal_hist.pop(0)
+            self.bal_time.pop(0)
+            self.bal_hist.append(self.bal)
+            self.bal_time.append(timestamp)
+            
+        if len(self.recent_transact) < 30: #Recent Transactions
+            self.recent_transact.append(-amount)
+            self.trans_time.append(timestamp)
+        else:
+            self.recent_transact.pop(0)
+            self.trans_time.pop(0)
+            self.recent_transact.append(-amount)
+            self.trans_time.append(timestamp)
+            
     def change_lim(self,newlim=0):
         '''
         Changes the transaction limit of the account.
@@ -171,8 +217,14 @@ class Saving(ac.Account):
             -----------
             newlim : int/float. Must be positive number
         '''
-        if newlim <= 0:
-            print("Account limit must be greater than 0.\n")
+        try:
+            if newlim < 0:
+                raise ac.NonNegativeError
+        except ac.NonNegativeError:
+            print("Limit must be non-negative. Please Try again.")
+            return
+        except TypeError:
+            print("Please enter a numerical value for the max limit to your account. Please try again.")
             return
         
         if self.trans_lim < newlim:
@@ -198,10 +250,26 @@ class Saving(ac.Account):
         
         if test == True: #For testing purposes
             self.dateend = today
-        
-        if amount <=0 or intrate <=0: 
-            print("Amount for a fixed deposit and interest rate must be greater than 0.\n")
+
+        try: #If amount is Negative or Alphabetic
+            if amount < 0:
+                raise ac.NonNegativeError 
+        except ac.NonNegativeError:
+            print("Fixed deposit must be non-negative. Please Try again.")
             return
+        except TypeError:
+            print("Please enter a numerical value for your fixed deposit. Please try again.")
+            return            
+            
+        try: #If intrate is Negative or Alphabetic
+            if intrate < 0:
+                raise ac.NonNegativeError 
+        except ac.NonNegativeError:
+            print("Interest Rate must be non-negative. Please Try again.")
+            return
+        except TypeError:
+            print("Please enter a numerical value for the Interest Rate of your deposit. Please try again.")
+            return            
         
         if self.fix_dep_inprocess == 1 and (today == self.dateend or (today-self.dateend).days >= 0): #Have fixed deposit created - lockin = OVER
             print("Your fixed depot created on {} is complete.\n".format(self.datestart.strftime("%Y/%m/%d")))
@@ -211,7 +279,6 @@ class Saving(ac.Account):
             self.dateend = 0
         elif self.fix_dep_inprocess == 1 and (today != self.dateend or (today-self.dateend).days < 0): #Fixed deposit still in progress
             print("You already have a fixed deposit in process. The current amount locked in is ${:.2f} at a rate of {:.2f}%. The amount will be made available on {}.\n".format(self.fixed_amount,self.intrate*100,self.dateend.strftime("%Y/%m/%d")))
-            return 
         elif self.fix_dep_inprocess == 0: #Creation - no current fixed deposit therefore initialize
             self.datestart = today
             self.dateend = today + relativedelta(years=1)
