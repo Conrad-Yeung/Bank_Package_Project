@@ -34,6 +34,14 @@ class TestBaseCard(unittest.TestCase):         # test class
         self.base_card2.changePIN(4321, 2345)
         self.assertEqual(self.base_card1.checkCode(2345), True)
         self.assertEqual(self.base_card2.checkCode(2345), True)
+
+        c1 = self.base_card1._card__card_pin
+        c2 = self.base_card2._card__card_pin
+        self.base_card1.changePIN(None, None)
+        self.base_card2.changePIN(None, None)        
+        self.assertEqual(self.base_card1._card__card_pin, c1)
+        self.assertEqual(self.base_card2._card__card_pin, c2)   
+
         print("---TestBaseCard: Function changePIN testing ... Successful")
 
     # Verify initial balance
@@ -43,3 +51,20 @@ class TestBaseCard(unittest.TestCase):         # test class
         self.assertEqual(self.base_card2.bal_curr, 0)
         print("---TestBaseCard: Initial balance testing ... Successful")
 
+    # Verify checkBalance
+    def test_checkBalance(self):
+        c1 = self.base_card1._card__card_pin
+        c2 = self.base_card2._card__card_pin
+
+        self.assertEqual(self.base_card1.checkBalance(c1), self.base_card1.bal_curr)
+        self.assertEqual(self.base_card2.checkBalance(c2), self.base_card2.bal_curr)
+        print("---TestBaseCard: checkBalance testing ... Successful")
+
+    # Verify checkTransactions
+    def test_checkTransactions(self):
+        c1 = self.base_card1._card__card_pin
+        c2 = self.base_card2._card__card_pin
+
+        self.assertEqual(self.base_card1.checkTransactions(c1), True)
+        self.assertEqual(self.base_card2.checkTransactions(c2), True)
+        print("---TestBaseCard: checkTransactions testing ... Successful")

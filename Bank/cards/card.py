@@ -12,6 +12,7 @@ class InvalidPinCodeError(Exception):
 class InvalidCredentialsError(Exception):
     pass
 
+
 class card:
     manager_pwd = 7777
     '''
@@ -177,6 +178,7 @@ class card:
                 print("\tAccount Holder: {}".format(self.acct_title))
                 print("\tCard Number: {}".format(self.card_no))
                 print("\tCurrent Balance: ${:.2f}".format(self.bal_curr))
+                return self.bal_curr
         except InvalidPinCodeError:
             print("Invalid pin code!")
         except:
@@ -209,6 +211,7 @@ class card:
                 df = pd.DataFrame(self.trans_hist, index=['Amount', 'Card Service Point']).T
                 print(df)
                 print("\tCurrent Available Balance: ${}".format(self.bal_curr))
+                return True     # success
         except InvalidPinCodeError:
             print("Invalid pin code!")
         except:

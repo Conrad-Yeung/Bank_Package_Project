@@ -11,6 +11,7 @@ class InvalidPinCodeError(Exception):
 class StaffAuthenticationError(Exception):
     pass
 
+
 class credit(cc.card):
     '''
     Contains credit card class attributes and methods
@@ -307,6 +308,7 @@ class credit(cc.card):
                 return
             
             if (amount is None) | (amount <= 0):
+                print("Invalid amount entered")
                 raise NegativeValueError
                 return
 
