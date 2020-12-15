@@ -25,10 +25,18 @@ class TestDebitCard(unittest.TestCase):         # test class
     def test_setTransactionLimit(self):
         c1 = self.debit_card1._card__card_pin
         c2 = self.debit_card2._card__card_pin
-        self.debit_card1.setTransactionLimit(c1, 7777, 2500)
-        self.debit_card2.setTransactionLimit(c2, 7777, 3500)
+        self.assertEqual(self.debit_card1.setTransactionLimit(c1, 7777, 2500),True)
+        self.assertEqual(self.debit_card2.setTransactionLimit(c2, 7777, 3500),True)
         self.assertEqual(self.debit_card1.daily_trans_limit, 2500)
         self.assertEqual(self.debit_card2.daily_trans_limit, 3500)
+        print("---TestDebitCard: Function setTransactionLimit testing ... Successful")
+
+    # Verify checkTransactionLimit function
+    def test_checkTransactionLimit(self):
+        c1 = self.debit_card1._card__card_pin
+        c2 = self.debit_card2._card__card_pin
+        self.assertEqual(self.debit_card1.daily_trans_limit, self.debit_card1.checkTransactionLimit(c1))
+        self.assertEqual(self.debit_card2.daily_trans_limit, self.debit_card2.checkTransactionLimit(c2))
         print("---TestDebitCard: Function setTransactionLimit testing ... Successful")
 
     # Verify changing card type function
@@ -40,7 +48,6 @@ class TestDebitCard(unittest.TestCase):         # test class
         self.assertEqual(self.debit_card1.card_type, "Gold")
         self.assertEqual(self.debit_card2.card_type, "Platinum")
 
-        print(">>>>>>>>>>>>>>>> My test")
         oldval = self.debit_card1.card_type
         self.debit_card1.changeCardType(c1, 7777, None)
         self.assertEqual(self.debit_card1.card_type, oldval)
@@ -49,4 +56,29 @@ class TestDebitCard(unittest.TestCase):         # test class
         self.debit_card2.changeCardType(c2, 7777, None)
         self.assertEqual(self.debit_card2.card_type, oldval)
 
+        self.assertEqual(self.debit_card1.changeCardType(1111, 7777, "FAKE"),None)
+        self.assertEqual(self.debit_card2.changeCardType(1111, 7777, "FAKE"),None)
+        self.assertEqual(self.debit_card1.changeCardType(c1, 1111, "FAKE"),None)
+        self.assertEqual(self.debit_card2.changeCardType(c2, 1111, "FAKE"),None)
         print("---TestDebitCard: Function changeCardType testing ... Successful")
+
+    # Verify checkCardType function
+    def test_checkCardType(self):
+        c1 = self.debit_card1._card__card_pin
+        c2 = self.debit_card2._card__card_pin
+        self.assertEqual(self.debit_card1.checkCardType(c1),True)
+        self.assertEqual(self.debit_card2.checkCardType(c2),True)
+        print("---TestDebitCard: Function checkCardType testing ... Successful")
+
+    # Verify make payment function
+    def test_makePayment(self):
+        bal1 = self.debit_card1.bal_curr
+        bal2 = self.debit_card2.bal_curr
+        c1 = self.debit_card1._card__card_pin
+        c2 = self.debit_card2._card__card_pin
+
+        self.assertEqual(self.debit_card1.makePayment(c1, 100, "Testing Unit 1"), True)
+        self.assertEqual(self.debit_card2.makePayment(c2, 50, "Testing Unit 2"), True)
+        self.assertEqual(self.debit_card1.bal_curr, bal1 - 100)
+        self.assertEqual(self.debit_card2.bal_curr, bal2 - 50)
+        print("---TestDebitCard: Function makePayment testing ... Successful")

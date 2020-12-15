@@ -132,12 +132,10 @@ class debit(cc.card):
             # Manager Authentication
             if (mgr_code_entered is None)|(mgr_code_entered != super().manager_pwd):
                 raise StaffAuthenticationError
-                return
 
             # Customer Authentication
             if (pin_entered is None) | (not self.checkCode(pin_entered)):
                 raise InvalidPinCodeError
-                return
             else:
                 print("Changing debit card daily transaction limit.")
                 print("\tAccount Holder: {}".format(self.acct_title))
@@ -146,7 +144,6 @@ class debit(cc.card):
 
             if (newlim is None) | (newlim < 0):
                 raise NegativeValueError
-                return
             
             if self.daily_trans_limit < newlim:
                 print("\tYour daily transaction limit has increased from ${:.2f} to ${:.2f}.\n".format(self.daily_trans_limit,newlim))
@@ -165,6 +162,8 @@ class debit(cc.card):
             print("Negative or invalid input value!")
         except:
             print("Unexpected error occurred.")
+        else:
+            return True
 
 
     def checkTransactionLimit(self, pin_entered):
@@ -187,6 +186,7 @@ class debit(cc.card):
                 raise InvalidPinCodeError
             else:
                 print("Your card daily transaction limit is ${:.2f}.\n".format(self.daily_trans_limit))
+                return self.daily_trans_limit
                 
         except InvalidPinCodeError:
             print("Invalid pin code!")
@@ -220,12 +220,10 @@ class debit(cc.card):
             # Manager Authentication
             if (mgr_code_entered is None)|(mgr_code_entered != super().manager_pwd):
                 raise StaffAuthenticationError
-                return
 
             # Customer Authentication
             if (pin_entered is None) | (not self.checkCode(pin_entered)):
                 raise InvalidPinCodeError
-                return
             else:
                 print("Changing debit card type.")
                 print("\tAccount Holder: {}".format(self.acct_title))
@@ -250,6 +248,8 @@ class debit(cc.card):
             print("Negative or invalid input value!")
         except:
             print("Unexpected error occurred.")
+        else:
+            return True
 
 
     def checkCardType(self, pin_entered):
@@ -272,6 +272,7 @@ class debit(cc.card):
                 raise InvalidPinCodeError
             else:
                 print("You have the {} debit card".format(self.card_type))
+                return True
         
         except InvalidPinCodeError:
             print("Invalid pin code!")
@@ -304,12 +305,10 @@ class debit(cc.card):
             # Customer Authentication
             if (pin_entered is None) | (not self.checkCode(pin_entered)):
                 raise InvalidPinCodeError
-                return
             
             if (amount is None) | (amount <= 0):
                 print("Invalid amount entered")
                 raise NegativeValueError
-                return
 
             timestamp = datetime.now().strftime("%Y/%m/%d, %H:%M:%S")
 
@@ -327,4 +326,6 @@ class debit(cc.card):
         except NegativeValueError:
             print("Negative or invalid input amount value!")
         except:
-            print("Unexpected error occurred.")         
+            print("Unexpected error occurred.")   
+        else:
+            return True      

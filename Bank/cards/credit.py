@@ -130,12 +130,10 @@ class credit(cc.card):
             # Manager Authentication
             if (mgr_code_entered is None)|(mgr_code_entered != super().manager_pwd):
                 raise StaffAuthenticationError
-                return
 
             # Customer Authentication
             if (pin_entered is None) | (not self.checkCode(pin_entered)):
                 raise InvalidPinCodeError
-                return
             else:
                 print("Changing account credit limit.")
                 print("\tAccount Holder: {}".format(self.acct_title))
@@ -144,7 +142,6 @@ class credit(cc.card):
 
             if (newlim is None) | (newlim < 0):
                 raise NegativeValueError
-                return
             
             if self.credit_limit < newlim:
                 print("\tYour card credit limit has increased from ${:.2f} to ${:.2f}.\n".format(self.credit_limit, newlim))
@@ -163,6 +160,8 @@ class credit(cc.card):
             print("Negative or invalid input value!")
         except:
             print("Unexpected error occurred.")
+        else:
+            return True
 
 
     def checkCreditLimit(self, pin_entered):
@@ -185,6 +184,7 @@ class credit(cc.card):
                 raise InvalidPinCodeError
             else:
                 print("Your card credit limit is ${:.2f}.\n".format(self.credit_limit))
+                return True
         
         except InvalidPinCodeError:
             print("Invalid pin code!")
@@ -218,12 +218,10 @@ class credit(cc.card):
             # Manager Authentication
             if (mgr_code_entered is None)|(mgr_code_entered != super().manager_pwd):
                 raise StaffAuthenticationError
-                return
 
             # Customer Authentication
             if (pin_entered is None) | (not self.checkCode(pin_entered)):
                 raise InvalidPinCodeError
-                return
             else:
                 print("Changing account interest rate.")
                 print("\tAccount Holder: {}".format(self.acct_title))
@@ -232,7 +230,6 @@ class credit(cc.card):
 
             if (newRate is None) | (newRate < 0):
                 raise NegativeValueError
-                return
             
             if self.interest_rate < newRate:
                 print("\tYour card interest rate has increased from {:.2f}% to {:.2f}%.\n".format(self.interest_rate, newRate))
@@ -251,6 +248,8 @@ class credit(cc.card):
             print("Negative or invalid input value!")
         except:
             print("Unexpected error occurred.")
+        else:
+            return True
 
 
     def checkInterestRate(self, pin_entered):
@@ -278,6 +277,8 @@ class credit(cc.card):
             print("Invalid pin code!")
         except:
             print("Unexpected error occurred.")
+        else:
+            return True
 
 
     def makePayment(self, pin_entered, amount, srvc_point="Unknown"):
@@ -305,12 +306,10 @@ class credit(cc.card):
             # Customer Authentication
             if (pin_entered is None) | (not self.checkCode(pin_entered)):
                 raise InvalidPinCodeError
-                return
             
             if (amount is None) | (amount <= 0):
                 print("Invalid amount entered")
                 raise NegativeValueError
-                return
 
             timestamp = datetime.now().strftime("%Y/%m/%d, %H:%M:%S")
 
@@ -330,6 +329,8 @@ class credit(cc.card):
             print("Negative or invalid input amount value!")
         except:
             print("Unexpected error occurred.") 
+        else:
+            return True
 
 
     def checkTransactions(self, pin_entered):
@@ -339,10 +340,11 @@ class credit(cc.card):
         Parameters:
         ----------
         pin_entered : int. Must be four digits
-        returns : none
+        returns : true/successful
         '''
         try:
             cc.card.checkTransactions(self, pin_entered)
             print("\tCurrent Interest Rate: {:.2f}%.".format(self.interest_rate))
+            return True
         except:
             print("Unexpected error occurred.")
