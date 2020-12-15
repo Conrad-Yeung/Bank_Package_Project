@@ -1,5 +1,7 @@
 Group: Conrad Yeung and Aamir Khan  
 
+Pypi: https://pypi.org/project/Bank-Package-Aamir-and-Conrad/
+
 [![Build Status](https://travis-ci.org/Conrad-Yeung/Data-533-Lab-4.svg?branch=master)](https://travis-ci.org/Conrad-Yeung/Data-533-Lab-4)
 ### ***Bank*** 
 This package can be used to manage bank customers. There are two subpackages accounts and cards. Accounts subpackage is for corporate customers using bank for large transactions. Cards subpackage is for retail customers who would like to use their bank account with card transactions.
