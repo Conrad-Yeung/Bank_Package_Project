@@ -1,6 +1,15 @@
 from datetime import datetime
 from . import card as cc
 
+# Custom Exception Classes
+class NegativeValueError(Exception):
+    pass
+
+class InvalidPinCodeError(Exception):
+    pass
+
+class StaffAuthenticationError(Exception):
+    pass
 
 class credit(cc.card):
     '''
@@ -69,12 +78,28 @@ class credit(cc.card):
         credit_limit : int
             card maximum credit limit allowed        
         interest_rate : int
-            interest percent accrued on the credit amount   
-        '''
-        cc.card.__init__(self, acct_no, acct_title, card_no, card_pin, amount)
+            interest percent accrued on the credit amount  
 
-        self.credit_limit = credit_limit
-        self.interest_rate = interest_rate        
+        Raises
+        ------
+        NegativeValueError
+            Any negative numeric value is entered 
+        '''
+        try:
+            cc.card.__init__(self, acct_no, acct_title, card_no, card_pin, amount)
+
+            if credit_limit < 0 or interest_rate < 0:
+                raise NegativeValueError
+            else:
+                self.credit_limit = credit_limit
+                self.interest_rate = interest_rate      
+        except NegativeValueError:
+            print("Negative value input not allowed!")
+        except:
+            print("Unexpected error occurred.")
+        else:
+            print("\tCredit Limit: {}".format(self.credit_limit))
+            print("\tInterest Rate: {}".format(self.interest_rate))
 
                 
     def setCreditLimit(self, pin_entered, mgr_code_entered, newlim = 0):
@@ -89,33 +114,45 @@ class credit(cc.card):
                 Must be four digits   
             mgr_code_entered: int. 
                 Branch Manager Code (same for all objects). Only manager allowed to alter credit limit.
+            
+            Raises
+            ------
+            NegativeValueError
+                Any negative numeric value is entered 
         '''
-        # Manager Authentication
-        if (mgr_code_entered is None)|(mgr_code_entered != super().manager_pwd):
+        try:
+            # Manager Authentication
+            if (mgr_code_entered is None)|(mgr_code_entered != super().manager_pwd):
+                print("Unauthorized access. Only branch manager can alter the credit limit!")
+                return
+
+            # Customer Authentication
+            if (pin_entered is None) | (not self.checkCode(pin_entered)):
+                print("Invalid pin code, please try again!")
+                return
+            else:
+                print("Account Holder: {}".format(self.acct_title))
+                print("Card Number: {}".format(self.card_no))
+                print("Current Balance: ${:.2f}".format(self.bal_curr))
+
+            if (newlim is None) | (newlim < 0):
+                print("Card credit limit must be positive.\n")
+                return
+            
+            if self.credit_limit < newlim:
+                print("Your card credit limit has increased from ${:.2f} to ${:.2f}.\n".format(self.credit_limit, newlim))
+                self.credit_limit = newlim
+            elif self.credit_limit > newlim:
+                print("Your card credit limit has decreased from ${:.2f} to ${:.2f}.\n".format(self.credit_limit, newlim))
+                self.credit_limit = newlim
+            else:
+                print("Your card credit limit is already ${:.2f}.\n".format(self.credit_limit))
+        except StaffAuthenticationError:
             print("Unauthorized access. Only branch manager can alter the credit limit!")
-            return
+               
 
-        # Customer Authentication
-        if (pin_entered is None) | (not self.checkCode(pin_entered)):
-            print("Invalid pin code, please try again!")
-            return
-        else:
-            print("Account Holder: {}".format(self.acct_title))
-            print("Card Number: {}".format(self.card_no))
-            print("Current Balance: ${:.2f}".format(self.bal_curr))
 
-        if (newlim is None) | (newlim < 0):
-            print("Card credit limit must be positive.\n")
-            return
-        
-        if self.credit_limit < newlim:
-            print("Your card credit limit has increased from ${:.2f} to ${:.2f}.\n".format(self.credit_limit, newlim))
-            self.credit_limit = newlim
-        elif self.credit_limit > newlim:
-            print("Your card credit limit has decreased from ${:.2f} to ${:.2f}.\n".format(self.credit_limit, newlim))
-            self.credit_limit = newlim
-        else:
-            print("Your card credit limit is already ${:.2f}.\n".format(self.credit_limit))
+
 
 
     def checkCreditLimit(self, pin_entered):

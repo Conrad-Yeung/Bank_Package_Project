@@ -2,6 +2,16 @@ from datetime import datetime
 from collections import defaultdict
 import pandas as pd
 
+# Custom Exception Classes
+class NegativeValueError(Exception):
+    pass
+
+class InvalidPinCodeError(Exception):
+    pass
+
+class InvalidCredentialsError(Exception):
+    pass
+
 class card:
     manager_pwd = 7777
     '''
@@ -40,6 +50,7 @@ class card:
             Prints summary information of past transactions.
     '''
 
+
     def __init__(self, acct_no, acct_title, card_no, pin_entered, amount = 0):
         '''
         Parameters
@@ -59,25 +70,46 @@ class card:
         ------
         NotImplementedError
             When account number/title, card number/pin are not provided.
+        InvalidCredentialsError
+            When some information is missing
+        NegativeValueError
+            Any negative numeric value is entered
+
         '''
-        if (acct_no is None) | (acct_title is None) | (card_no is None) | (pin_entered is None):
-            raise NotImplementedError("Please provide correct details to create a bank card")
-        
-        self.acct_title = acct_title
-        self.acct_no = acct_no
-        self.card_no = card_no
-        self.__card_pin = pin_entered
-        self.bal_curr = amount
-        # Initialize balance records
-        self.trans_hist = defaultdict(dict)
-        self.trans_hist[datetime.now().strftime("%Y/%m/%d, %H:%M:%S")]= [amount, 'Initialized Account']
-        
-             
+        try:
+            if (acct_no is None) | (acct_title is None) | (card_no is None) | (pin_entered is None):
+                raise NotImplementedError
+            elif acct_no < 0 or card_no < 0 or pin_entered < 0 or amount < 0:
+                raise NegativeValueError
+            else:
+                self.acct_title = acct_title
+                self.acct_no = acct_no
+                self.card_no = card_no
+                self.__card_pin = pin_entered
+                self.bal_curr = amount
+                # Initialize balance records
+                self.trans_hist = defaultdict(dict)
+                self.trans_hist[datetime.now().strftime("%Y/%m/%d, %H:%M:%S")]= [amount, 'Initialized Account']
+        except NotImplementedError:
+            print("Bank card details are missing")
+        except InvalidCredentialsError:
+            print("Invalid credentials!")
+        except NegativeValueError:
+            print("Negative value input not allowed!")
+        except:
+            print("Unexpected error occurred.")
+        else:
+            print("Account successfully created.")
+            print("\tAccount Title: {}".format(self.acct_title))
+            print("\tAccount No.: {}".format(self.acct_no))
+            print("\tCard No.: {}".format(self.card_no))
+            print("\tAccount Balance: {}".format(self.bal_curr))
+
+
     def makePayment(self, pin_entered, amount, srvc_point="Unknown"):
         # Payment will be specific to the card type.
         # Sub-classes credit and debit implement this function
         pass
-
 
 
     def checkCode(self, pin_entered):
@@ -102,12 +134,23 @@ class card:
         oldPIN : int. Must be four digits
         newPIN : int. Must be four digits
         returns : Status, True or False
+
+        Raises
+        ------
+        InvalidPinCodeError:
+            Pin code is missing or wrong
         '''
-        # Customer Authentication
-        if (oldPIN is None) | (not self.checkCode(oldPIN)):
-            print("Invalid pin code, please try again!")
+        try:
+            # Customer Authentication
+            if (oldPIN is None) | (not self.checkCode(oldPIN)):
+                raise InvalidPinCodeError
+            else:
+                self.__card_pin = newPIN
+        except InvalidPinCodeError:
+            print("Invalid pin code!")
+        except:
+            print("Unexpected error occurred.")
         else:
-            self.__card_pin = newPIN
             print("Card pin code successfully changed!")
 
 
@@ -119,15 +162,25 @@ class card:
         ----------
         pin_entered : int. Must be four digits
         returns : int, returns current account balance
-        '''
 
-        # Customer Authentication
-        if (pin_entered is None) | (not self.checkCode(pin_entered)):
-            print("Invalid pin code, please try again!")
-        else:
-            print("Account Holder: {}".format(self.acct_title))
-            print("Card Number: {}".format(self.card_no))
-            print("Current Balance: ${:.2f}".format(self.bal_curr))
+        Raises
+        ------
+        InvalidPinCodeError:
+            Pin code is missing or wrong
+        '''
+        try:
+            # Customer Authentication
+            if (pin_entered is None) | (not self.checkCode(pin_entered)):
+                raise InvalidPinCodeError
+            else:
+                print("Checking account balance.")
+                print("\tAccount Holder: {}".format(self.acct_title))
+                print("\tCard Number: {}".format(self.card_no))
+                print("\tCurrent Balance: ${:.2f}".format(self.bal_curr))
+        except InvalidPinCodeError:
+            print("Invalid pin code!")
+        except:
+            print("Unexpected error occurred.")
 
 
     def checkTransactions(self, pin_entered):
@@ -137,16 +190,26 @@ class card:
         ----------
         pin_entered : int. Must be four digits
         returns : none
-        '''
 
-        # Customer Authentication
-        if (pin_entered is None) | (not self.checkCode(pin_entered)):
-            print("Invalid pin code, please try again!")
-        else:
-            print("Account Holder: {}".format(self.acct_title))
-            print("Current Balance: ${:.2f}".format(self.bal_curr))
-            print("Your balance history for the past transcations:\n")
-            
-            df = pd.DataFrame(self.trans_hist, index=['Amount', 'Card Service Point']).T
-            print(df)
-            print("Current Available Balance: ${}".format(self.bal_curr))
+        Raises
+        ------
+        InvalidPinCodeError:
+            Pin code is missing or wrong
+        '''
+        try:
+            # Customer Authentication
+            if (pin_entered is None) | (not self.checkCode(pin_entered)):
+                raise InvalidPinCodeError
+            else:
+                print("Checking account history.")
+                print("\tAccount Holder: {}".format(self.acct_title))
+                print("\tCurrent Balance: ${:.2f}".format(self.bal_curr))
+                print("\tYour balance history for the past transcations:\n")
+                
+                df = pd.DataFrame(self.trans_hist, index=['Amount', 'Card Service Point']).T
+                print(df)
+                print("\tCurrent Available Balance: ${}".format(self.bal_curr))
+        except InvalidPinCodeError:
+            print("Invalid pin code!")
+        except:
+            print("Unexpected error occurred.")
