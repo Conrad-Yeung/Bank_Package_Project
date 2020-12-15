@@ -12,5 +12,5 @@ jobs:
       env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
 
 install: pip install matplotlib
-script: python Test_Suite.py
+script: python Test_Suite.py Test_Cards.py
 
